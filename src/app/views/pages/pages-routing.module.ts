@@ -4,6 +4,11 @@ import { Page404Component } from './page404/page404.component';
 import { Page500Component } from './page500/page500.component';
 import { LoginComponent } from './login/login.component';
 import { MenuComponent } from './menu/menu.component';
+import { OrderComponent } from './order/order.component';
+import { Table } from 'primeng/table';
+import { TableComponent } from './table/table.component';
+import { StatisticComponent } from './statistic/statistic.component';
+import { StaffComponent } from './staff/staff.component';
 
 
 
@@ -36,7 +41,35 @@ const routes: Routes = [
     data: {
       title: 'Menu'
     }
-  }
+  },
+  {
+    path: 'order',
+    component: OrderComponent,
+    data: {
+      title: 'Order'
+    }
+  },
+  {
+    path: 'table',
+    component: TableComponent,
+    data: {
+      title: 'Table'
+    }
+  },
+  {
+    path: 'statistic',
+    component: StatisticComponent,
+    data: {
+      title: 'Statistic'
+    }
+  },
+  {
+    path: 'staff',
+    component: StaffComponent,
+    data: {
+      title: 'Staff'
+    }
+  },
 ];
 
 @NgModule({

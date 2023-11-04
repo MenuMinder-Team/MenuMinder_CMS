@@ -39,8 +39,13 @@ import { AngularFireStorageModule } from '@angular/fire/compat/storage';
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { OrderComponent } from './order/order.component';
 import { MenuComponent } from './menu/menu.component';
+import { StaffComponent } from './staff/staff.component';
+import { TableComponent } from './table/table.component';
+import { StatisticComponent } from './statistic/statistic.component';
+import { CategoryComponent } from './components/category/category.component';
+import { DishComponent } from './components/dish/dish.component';
 
-
+import { MultiSelectModule } from 'primeng/multiselect';
 
 
 @NgModule({
@@ -50,6 +55,11 @@ import { MenuComponent } from './menu/menu.component';
     Page500Component,
     OrderComponent,
     MenuComponent,
+    StaffComponent,
+    TableComponent,
+    StatisticComponent,
+    CategoryComponent,
+    DishComponent,
 
   ],
   imports: [
@@ -82,7 +92,8 @@ import { MenuComponent } from './menu/menu.component';
     AngularFireDatabaseModule,
     AngularFireStorageModule,
     DropdownModule,
-    InputNumberModule
+    InputNumberModule,
+    MultiSelectModule
   ],
   providers: [
     MessageService,

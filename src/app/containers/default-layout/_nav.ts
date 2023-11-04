@@ -12,7 +12,30 @@ export const navItems: INavData[] = [
     url: 'pages/menu',
     iconComponent: { name: 'cil-dog' }
   },
+  {
+    name: 'Order',
+    url: 'pages/order',
+    iconComponent: { name: 'cil-speedometer' }
 
+  },
+  {
+    name: 'Table',
+    url: 'pages/table',
+    iconComponent: { name: 'cil-speedometer' }
+
+  },
+  {
+    name: 'Staff',
+    url: 'pages/staff',
+    iconComponent: { name: 'cil-speedometer' }
+
+  },
+  {
+    name: 'Statistic',
+    url: 'pages/statistic',
+    iconComponent: { name: 'cil-speedometer' }
+
+  },
   // {
   //   name: 'Quỹ cứu trợ',
   //   iconComponent: { name: 'cil-chart-pie' },
