@@ -1,18 +1,10 @@
 <div class="page-container">
   <div class="list-table card p-4">
     <h4 class="mb-4">List Table</h4>
-    <p-table
-      #dt1
-      [value]="listTable"
-      [paginator]="true"
-      [rows]="10"
-      [(selection)]="selectedTables"
-      [tableStyle]="{ 'min-width': '50rem' }"
-      styleClass="p-datatable-striped"
-      dataKey="tableId"
+    <p-table #dt1 [value]="listTable" [paginator]="true" [rows]="10" [(selection)]="selectedTables"
+      [tableStyle]="{ 'min-width': '50rem' }" styleClass="p-datatable-striped" dataKey="tableId"
       currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
-      [globalFilterFields]="['name', 'capacity', 'status']"
-    >
+      [globalFilterFields]="['name', 'capacity', 'status']">
       <ng-template pTemplate="header">
         <tr>
           <th style="width: 4rem">
@@ -23,7 +15,7 @@
           <th>Capacity</th>
           <th>Status</th>
         </tr>
-        <tr>
+        <!-- <tr>
           <th></th>
           <th></th>
           <th>
@@ -55,7 +47,7 @@
           </th>
           <th></th>
           <th></th>
-        </tr>
+        </tr> -->
       </ng-template>
       <ng-template pTemplate="body" let-table>
         <tr>
