@@ -1,3 +1,201 @@
 <div class="grid">
-    <div class="col-12"><div class="card"></div></div>
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <p-button label="Add new staff" icon="pi pi-plus" style="margin-bottom: 10px;"
+                      (click)="showDialog()"></p-button>
+            <div class="d-flex justify-between align-items-center">
+                <h1 style="margin-right: auto;">List Staff</h1>
+                <div class="custom-search">
+                    <span class="block mt-0 md:mt-0 p-input-icon-left">
+                        <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."
+                               class="w-full sm:w-auto" />
+                    </span>
+                </div>
+            </div>
+            <p-table [value]="staffData" [paginator]="true" [rows]="10">
+                <caption>List Staff</caption>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone Number</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                        <th>Approved</th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-row>
+                    <tr *ngIf="matchesSearch(row)">
+                        <td>{{ row.name }}</td>
+                        <td>{{ row.email }}</td>
+                        <td>{{ row.phoneNumber }}</td>
+                        <td>{{ row.status }}</td>
+                        <td>
+                            <button pButton type="button" icon="pi pi-pencil" (click)="editStaff(row)"></button>
+                        </td>
+                        <td>
+                            <button pButton type="button" icon="pi pi-trash" (click)="deleteStaff(row)"></button>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </div>
 </div>
+
+<p-dialog header="Add Staff" [(visible)]="displayDialog" [modal]="true">
+    <div class="form-group">
+        <label for="name">Staff Name:</label>
+        <input pInputText type="text" [(ngModel)]="newStaff.name" id="name" />
+    </div>
+    <div style="display: flex; flex-wrap: wrap;">
+        <div class="form-group" style="flex: 1; margin-right: 20px;">
+            <label for="dateOfBirth">Date of Birth:</label>
+        </div>
+        <div class="form-group" style="flex: 2;">
+            <input pInputText type="text" [(ngModel)]="newStaff.dateOfBirth" id="dateOfBirth" />
+        </div>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; margin-top: 10px;">
+        <div class="form-group" style="flex: 1; margin-right: 20px;">
+            <label for="gender">Gender:</label>
+        </div>
+        <div class="form-group" style="flex: 2;">
+            <p-dropdown [options]="genderOptions" [(ngModel)]="editingStaff.gender" id="gender" optionLabel="label" optionValue="value"></p-dropdown>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="email">Email:</label>
+        <input pInputText type="text" [(ngModel)]="newStaff.email" id="email" />
+    </div>
+    <div style="display: flex; flex-wrap: wrap;">
+        <div class="form-group" style="flex: 1; margin-right: 20px;">
+            <label for="phoneNumber">PhoneNumber:</label>
+        </div>
+        <div class="form-group" style="flex: 2;">
+            <input pInputText type="number" [(ngModel)]="newStaff.phoneNumber" id="phoneNumber" />
+        </div>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; margin-top: 10px;">
+        <div class="form-group" style="flex: 1; margin-right: 20px;">
+            <label for="role">Role:</label>
+        </div>
+        <div class="form-group" style="flex: 2;">
+            <p-dropdown [options]="roleOptions" [(ngModel)]="editingStaff.role" id="role" optionLabel="label" optionValue="value"></p-dropdown>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="address">Address:</label>
+        <input pInputText type="text" [(ngModel)]="newStaff.address" id="address" />
+    </div>
+    <div class="button-group" style="display: flex; justify-content: space-between;">
+        <button pButton type="button" label="Save" (click)="saveStaff()" style="margin-right:auto;"></button>
+        <button pButton type="button" label="Cancel" (click)="cancelStaff()"></button>
+    </div>
+</p-dialog>
+
+<!-- Similar sidebar for staff details as in the menu -->
+
+<p-sidebar [(visible)]="displaySidebar" [position]="'right'" [blockScroll]="true">
+    <ng-container *ngIf="selectedStaff">
+        <!-- Các thông tin chi tiết của món ăn -->
+        <div>
+            <label>Staff Name:</label>
+            <div>{{ selectedStaff.name }}</div>
+        </div>
+        <div>
+            <label>Date of Birth:</label>
+            <div>{{ selectedStaff.dateOfBirth }}</div>
+        </div>
+        <div>
+            <label>Gender:</label>
+            <div>{{ selectedStaff.gender }}</div>
+        </div>
+        <div>
+            <label>Email:</label>
+            <div>{{ selectedStaff.email }}</div>
+        </div>
+        <div>
+            <label>Phone Number:</label>
+            <div>{{ selectedStaff.phoneNumber }}</div>
+        </div>
+        <div>
+            <label>Role:</label>
+            <div>{{ selectedStaff.role}}</div>
+        </div>
+        <div>
+            <label>Address:</label>
+            <div>{{ selectedStaff.address}}</div>
+        </div>
+
+        <div class="button-group" style="display: flex; gap: 10px;">
+            <!-- Nút Edit -->
+            <p-button label="Edit" icon="pi pi-pencil" style="margin-bottom: 10px;" (click)="editStaff()"></p-button>
+
+
+            <p-button label="Delete" icon="pi pi-trash" style="margin-bottom: 10px;" (click)="deleteStaff()"></p-button>
+        </div>
+    </ng-container>
+
+    <!-- Form fields for editing staff details -->
+
+    <div *ngIf="editingStaff">
+        <div>
+            <label for="name">Staff Name:</label>
+            <input pInputText type="text" [(ngModel)]="editingStaff.name" id="name" />
+        </div>
+        <div style="display: flex; flex-wrap: wrap;">
+            <div style="flex: 1; margin-right: 20px;">
+                <label for="dateOfBirth">Date of Birth:</label>
+            </div>
+            <div style="flex: 2;">
+                <input pInputText type="text" [(ngModel)]="editingStaff.dateOfBirth" id="dateOfBirth" />
+            </div>
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; margin-top: 10px;">
+            <div style="flex: 1; margin-right: 20px;">
+                <label for="gender">Gender:</label>
+            </div>
+            <div style="flex: 2;">
+                <p-dropdown [options]="genderOptions" [(ngModel)]="editingStaff.gender" id="gender" optionLabel="label" optionValue="value"></p-dropdown>
+            </div>
+        </div>
+
+        <div>
+            <label for="email">Email:</label>
+            <input pInputText type="text" [(ngModel)]="editingStaff.email" id="email" />
+        </div>
+        <div style="display: flex; flex-wrap: wrap;">
+            <div style="flex: 1; margin-right: 20px;">
+                <label for="phoneNumber">Phone Number:</label>
+            </div>
+            <div style="flex: 2;">
+                <input pInputText type="number" [(ngModel)]="editingStaff.phoneNumber" id="phoneNumber" />
+            </div>
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; margin-top: 10px;">
+            <div style="flex: 1; margin-right: 20px;">
+                <label for="role">Role:</label>
+            </div>
+            <div style="flex: 2;">
+                <p-dropdown [options]="roleOptions" [(ngModel)]="editingStaff.role" id="role" optionLabel="label" optionValue="value"></p-dropdown>
+            </div>
+        </div>
+
+        <div>
+            <label for="address">Address:</label>
+            <input pInputText type="text" [(ngModel)]="editingStaff.address" id="address" />
+        </div>
+        <div class="button-group" style="display: flex; gap: 10px;">
+            <p-button label="Save" (click)="saveEditedStaff()"></p-button>
+
+            <p-button label="Cancel" (click)="cancelEdit()"></p-button>
+        </div>
+    </div>
+</p-sidebar>
