@@ -1,221 +1,45 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { DynamicDialogRef, DialogService } from 'primeng/dynamicdialog';
 import { Table } from 'primeng/table';
-import { Product } from 'src/app/demo/api/product';
 import { StorageService } from 'src/app/services/storage.service';
 import { DataView } from 'primeng/dataview';
+import { MenuService } from 'src/app/services/menu.service';
+import { OrderService } from 'src/app/services/order.service';
+import { forkJoin } from 'rxjs';
+import { TableService } from 'src/app/services/table.service';
 @Component({
     selector: 'app-order',
     templateUrl: './order.component.html',
     styleUrls: ['./order.component.scss'],
 })
-export class OrderComponent {
+export class OrderComponent implements OnInit {
     productDialog: boolean = false;
 
     deleteProductDialog: boolean = false;
 
     deleteProductsDialog: boolean = false;
     statuses = [
-        { label: 'Available', value: 'Available' },
-        { label: 'Occupied', value: 'Occupied' },
-        { label: 'Preparing', value: 'Preparing' },
+        { label: 'Available', value: 'AVAILABLE' },
+        { label: 'Occupied', value: 'OCCUPIED' },
+        { label: 'Preparing', value: 'PREPARING' },
     ];
-    tables: any[] = [
-        {
-            status: 'Available',
-            name: 'Table 1',
-            capacity: 4,
-            tableId: 1,
-        },
-        {
-            status: 'Occupied',
-            name: 'Table 2',
-            capacity: 2,
-            tableId: 2,
-        },
-        {
-            status: 'Preparing',
-            name: 'Table 3',
-            capacity: 6,
-            tableId: 3,
-        },
-        {
-            status: 'Available',
-            name: 'Table 4',
-            capacity: 4,
-            tableId: 4,
-        },
-        {
-            status: 'Occupied',
-            name: 'Table 5',
-            capacity: 2,
-            tableId: 5,
-        },
-        {
-            status: 'Preparing',
-            name: 'Table 6',
-            capacity: 6,
-            tableId: 6,
-        },
-        {
-            status: 'Available',
-            name: 'Table 7',
-            capacity: 4,
-            tableId: 7,
-        },
-        {
-            status: 'Occupied',
-            name: 'Table 8',
-            capacity: 2,
-            tableId: 8,
-        },
-        {
-            status: 'Preparing',
-            name: 'Table 9',
-            capacity: 6,
-            tableId: 9,
-        },
-        {
-            status: 'Available',
-            name: 'Table 10',
-            capacity: 4,
-            tableId: 10,
-        },
-        {
-            status: 'Occupied',
-            name: 'Table 11',
-            capacity: 2,
-            tableId: 11,
-        },
-        {
-            status: 'Preparing',
-            name: 'Table 12',
-            capacity: 6,
-            tableId: 12,
-        },
-        {
-            status: 'Available',
-            name: 'Table 13',
-            capacity: 4,
-            tableId: 13,
-        },
-        {
-            status: 'Occupied',
-            name: 'Table 14',
-            capacity: 2,
-            tableId: 14,
-        },
-        {
-            status: 'Preparing',
-            name: 'Table 15',
-            capacity: 6,
-            tableId: 15,
-        },
-        {
-            status: 'Available',
-            name: 'Table 16',
-            capacity: 4,
-            tableId: 16,
-        },
-        {
-            status: 'Occupied',
-            name: 'Table 17',
-            capacity: 2,
-            tableId: 17,
-        },
-        {
-            status: 'Preparing',
-            name: 'Table 18',
-            capacity: 6,
-            tableId: 18,
-        },
-        {
-            status: 'Available',
-            name: 'Table 19',
-            capacity: 4,
-            tableId: 19,
-        },
-        {
-            status: 'Occupied',
-            name: 'Table 20',
-            capacity: 2,
-            tableId: 20,
-        },
-    ];
-
-    sampleFoodData = [
-        {
-            food_id: 1,
-            category: 'Main Course',
-            name: 'Spaghetti',
-            price: 12.99,
-            recipe: 'Delicious spaghetti with rich Bolognese sauce.',
-            image: 'spaghetti.jpg',
-            status: 'Available',
-        },
-        {
-            food_id: 2,
-            category: 'Appetizer',
-            name: 'Caesar Salad',
-            price: 8.99,
-            recipe: 'Fresh romaine lettuce with Caesar dressing, croutons, and parmesan cheese.',
-            image: 'caesar_salad.jpg',
-            status: 'Available',
-        },
-        {
-            food_id: 3,
-            category: 'Dessert',
-            name: 'Chocolate Cake',
-            price: 6.99,
-            recipe: 'Decadent chocolate cake with a rich and moist texture.',
-            image: 'chocolate_cake.jpg',
-            status: 'Available',
-        },
-        {
-            food_id: 3,
-            category: 'Dessert',
-            name: 'Chocolate Cake',
-            price: 6.99,
-            recipe: 'Decadent chocolate cake with a rich and moist texture.',
-            image: 'chocolate_cake.jpg',
-            status: 'Available',
-        },
-        {
-            food_id: 3,
-            category: 'Dessert',
-            name: 'Chocolate Cake',
-            price: 6.99,
-            recipe: 'Decadent chocolate cake with a rich and moist texture.',
-            image: 'chocolate_cake.jpg',
-            status: 'Available',
-        },
-        {
-            food_id: 3,
-            category: 'Dessert',
-            name: 'Chocolate Cake',
-            price: 6.99,
-            recipe: 'Decadent chocolate cake with a rich and moist texture.',
-            image: 'chocolate_cake.jpg',
-            status: 'Available',
-        },
-        {
-            food_id: 3,
-            category: 'Dessert',
-            name: 'Chocolate Cake',
-            price: 6.99,
-            recipe: 'Decadent chocolate cake with a rich and moist texture.',
-            image: 'chocolate_cake.jpg',
-            status: 'Available',
-        },
-        // Add more food items as needed
-    ];
-
+    tableStatus = ['AVAILABLE', 'OCCUPIED', 'PREPARING'];
+    orderStatus = ['PENDING', 'PROCESSING', 'SERVED'];
+    tables;
+    selectedStatus;
+    listServing;
+    listFoodOrder = [];
+    listFood;
+    category;
+    selectedServing;
     product: any = {};
-
-    selectedProducts: any[] = [];
-
+    servingDetail;
+    totalPrice;
+    selectedTables: any[] = [];
+    qty = 1;
+    note;
     submitted: boolean = false;
 
     rowsPerPageOptions = [5, 10, 20];
@@ -226,10 +50,37 @@ export class OrderComponent {
         private router: Router,
         private dialogService: DialogService,
         private storageSerive: StorageService,
-        private messageService: MessageService
+        private messageService: MessageService,
+        private menuService: MenuService,
+        private orderService: OrderService,
+        private tableService: TableService
     ) {}
 
-    ngOnInit() {}
+    ngOnInit() {
+        this.getData();
+    }
+
+    getData() {
+        forkJoin([
+            this.menuService.getMenu(),
+            this.menuService.getListCategory(),
+            this.tableService.getListTable(),
+            this.orderService.getListServing(),
+        ]).subscribe({
+            next: (res) => {
+                this.listFood = res[0];
+                this.category = res[1];
+                this.tables = res[2];
+                this.listServing = res[3];
+                this.listServing.forEach(
+                    (item) =>
+                        (item.serving['tables'] = item.tables.map(
+                            (item) => item.tableNumber
+                        ))
+                );
+            },
+        });
+    }
 
     onRowSelect(data) {
         this.storageSerive.setItemLocal('currentProduct', data);
@@ -249,7 +100,7 @@ export class OrderComponent {
     confirmDeleteSelected() {
         this.deleteProductsDialog = false;
         this.tables = this.tables.filter(
-            (val) => !this.selectedProducts.includes(val)
+            (val) => !this.selectedTables.includes(val)
         );
         this.messageService.add({
             severity: 'success',
@@ -257,7 +108,7 @@ export class OrderComponent {
             detail: 'Products Deleted',
             life: 3000,
         });
-        this.selectedProducts = [];
+        this.selectedTables = [];
     }
 
     confirmDelete() {
@@ -289,7 +140,32 @@ export class OrderComponent {
         return index;
     }
 
-    createOrder() {}
+    createOrder() {
+        const user = this.storageSerive.getItemLocal('user');
+        console.log(user);
+        const createdBy = user.accountId;
+        const diningTableIds = this.selectedTables.map((item) => item.tableId);
+        this.orderService
+            .createServing(createdBy, 4, new Date(), diningTableIds)
+            .subscribe({
+                next: (res: any) => {
+                    this.messageService.add({
+                        key: 'toast',
+                        severity: 'success',
+                        detail: 'Create success',
+                    });
+                    this.getListTable();
+                    this.selectedTables = null;
+                },
+                error: (err) => {
+                    this.messageService.add({
+                        key: 'toast',
+                        severity: 'error',
+                        detail: err.error.message,
+                    });
+                },
+            });
+    }
 
     onGlobalFilter(table: Table, event: Event) {
         table.filterGlobal(
@@ -304,12 +180,16 @@ export class OrderComponent {
 
     getSeverity(status) {
         switch (status) {
-            case 'Preparing':
-                return 'Warning';
-            case 'Occupied':
+            case 'PREPARING':
+            case 'PROCESSING':
+                return 'info';
+            case 'OCCUPIED':
                 return 'danger';
-            default:
+            case 'AVAILABLE':
+            case 'SERVED':
                 return 'success';
+            default:
+                return 'warning';
         }
     }
 
@@ -323,6 +203,131 @@ export class OrderComponent {
             key: 'toast',
             severity: 'success',
             detail: 'Added to bill',
+        });
+    }
+
+    getCategoryName(id) {
+        const cate = this.category.find((cate) => cate.categoryId === id);
+        return cate ? cate.categoryName : '';
+    }
+
+    onServingSelect(ser) {
+        this.selectedServing = ser;
+        this.getOrderDetail(ser.serving.servingId);
+    }
+
+    getOrderDetail(id) {
+        this.orderService.getServingDetail(id).subscribe({
+            next: (res: any) => {
+                console.log(res);
+                this.servingDetail = res.data.servingResult.foodOrder;
+                this.totalPrice = res.data.totalPrice;
+                console.log(this.servingDetail);
+            },
+            error: (err) => {
+                console.log(err.error);
+            },
+        });
+    }
+
+    orderFood(food, qty, note?) {
+        console.log(food);
+        const params = {
+            foodId: food.foodId,
+            servingId: this.selectedServing.serving.servingId,
+            quantity: qty,
+            note: note,
+            price: food.price,
+        };
+        this.listFoodOrder.push(params);
+        this.orderService
+            .createOrderFood(
+                this.selectedServing.serving.servingId,
+                this.listFoodOrder
+            )
+            .subscribe({
+                next: (res) => {
+                    this.messageService.add({
+                        key: 'toast',
+                        severity: 'success',
+                        detail: 'Add food success',
+                    });
+                    this.listFoodOrder = [];
+                    this.note = '';
+                    this.qty = 1;
+                    this.getOrderDetail(this.selectedServing.serving.servingId);
+                },
+                error: (err) => {
+                    this.listFoodOrder = [];
+                    this.messageService.add({
+                        key: 'toast',
+                        severity: 'error',
+                        detail: err.error.message,
+                    });
+                },
+            });
+    }
+
+    updateOrderStatus(serving) {
+        console.log(this.selectedStatus);
+        this.orderService
+            .updateOrderFood(serving.foodOrderId, this.selectedStatus)
+            .subscribe({
+                next: (res) => {
+                    serving.status = this.selectedStatus;
+                    this.getOrderDetail(this.selectedServing.serving.servingId);
+                },
+            });
+    }
+
+    checkOut() {
+        this.orderService
+            .createBill(this.selectedServing.serving.servingId)
+            .subscribe({
+                next: (res) => {
+                    this.messageService.add({
+                        key: 'toast',
+                        severity: 'success',
+                        detail: 'Checkout success',
+                    });
+                    this.selectedServing = null;
+                    this.getListServing();
+                },
+                error: (err) => {
+                    this.messageService.add({
+                        key: 'toast',
+                        severity: 'error',
+                        detail: err.error.message,
+                    });
+                },
+            });
+    }
+
+    updateTableStatus(table) {
+        this.tableService.updateInfo(table).subscribe({
+            next: (res) => {},
+        });
+    }
+
+    getListServing() {
+        this.orderService.getListServing().subscribe({
+            next: (res) => {
+                this.listServing = res;
+                this.listServing.forEach(
+                    (item) =>
+                        (item.serving['tables'] = item.tables.map(
+                            (item) => item.tableNumber
+                        ))
+                );
+            },
+        });
+    }
+
+    getListTable() {
+        this.tableService.getListTable().subscribe({
+            next: (res) => {
+                this.tables = res;
+            },
         });
     }
 }

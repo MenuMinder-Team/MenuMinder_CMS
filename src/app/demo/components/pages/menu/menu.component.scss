@@ -70,7 +70,7 @@ button .pi:hover {
         margin-left: 0.25em; /* Đặt khoảng cách giữa các nút trong footer */
     }
     ::ng-deep .p-sidebar-right {
-        width: 500px;
+        width: 550px;
     }
 }
 
@@ -112,10 +112,54 @@ p-sidebar {
 
 .row-type {
     display: flex;
-    margin-top: 0.5rem;
+    margin-top: 2rem;
     > div,
-    input {
+    input,
+    .p-inputwrapper,
+    .p-dropdown,
+    .p-multiselect {
         position: absolute;
         left: 160px;
+        width: 250px !important;
+        height: 32px;
+    }
+}
+
+:host::ng-deep {
+    .p-dropdown,
+    .p-inputnumber-input,
+    .p-calendar,
+    .p-multiselect {
+        height: 32px !important;
+        width: 250px !important;
+    }
+    .p-inputtext,
+    .p-dropdown-label,
+    .p-multiselect-label {
+        display: flex !important;
+        align-items: center;
+        height: 32px;
+        width: 250px !important;
+    }
+}
+
+input[type="file"] {
+    display: none;
+}
+
+.custom-file-upload {
+    height: 180px;
+    width: 180px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    img {
+        border-radius: 10px;
+        height: 180px;
+        width: 180px;
+        object-fit: fill;
     }
 }

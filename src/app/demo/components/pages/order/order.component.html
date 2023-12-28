@@ -1,56 +1,120 @@
 <div class="grid">
-    <div [ngClass]="{ 'col-6': showServing, 'col-12': !showServing }">
+    <div
+        [ngClass]="{
+            'col-6': showServing,
+            'col-12': !showServing || !selectedServing
+        }"
+    >
         <div class="card px-6 py-6">
             <p-toolbar styleClass="mb-4">
                 <ng-template pTemplate="left">
                     <div class="my-2">
-                        <button pButton pRipple label="Create Serving" icon="pi pi-plus" class="p-button-success"
-                            (click)="createOrder()" [disabled]="
-                                !selectedProducts || !selectedProducts.length
-                            "></button>
+                        <button
+                            pButton
+                            pRipple
+                            label="Create Serving"
+                            icon="pi pi-plus"
+                            class="p-button-success"
+                            (click)="createOrder()"
+                            [disabled]="
+                                !selectedTables || !selectedTables.length
+                            "
+                        ></button>
                     </div>
                 </ng-template>
 
                 <ng-template pTemplate="right">
-                    <p-button pRipple label="{{ showServing ? 'Table' : 'Serving' }}" class="mr-2 inline-block" icon="{{
+                    <p-button
+                        pRipple
+                        label="{{ showServing ? 'Table' : 'Serving' }}"
+                        class="mr-2 inline-block"
+                        icon="{{
                             showServing
                                 ? 'pi pi-angle-double-right'
                                 : 'pi pi-angle-double-left'
-                        }}" iconPos="right" (click)="showServing = !showServing"></p-button>
+                        }}"
+                        iconPos="right"
+                        (click)="
+                            showServing = !showServing;
+                            showServing ? getListServing() : getListTable()
+                        "
+                    ></p-button>
                 </ng-template>
             </p-toolbar>
 
-            <p-table *ngIf="!showServing" #dt [value]="tables" responsiveLayout="scroll" [rows]="10"
-                [globalFilterFields]="['name', 'status', 'capacity']" [paginator]="true"
-                [rowsPerPageOptions]="[10, 20, 30]" [showCurrentPageReport]="true" [(selection)]="selectedProducts"
-                selectionMode="multiple" [rowHover]="true" dataKey="tableId">
+            <p-table
+                *ngIf="!showServing"
+                #dt
+                [value]="tables"
+                responsiveLayout="scroll"
+                [rows]="10"
+                [globalFilterFields]="[
+                    'capacity',
+                    'status',
+                    'tableId',
+                    'tableNumber'
+                ]"
+                [paginator]="true"
+                [(selection)]="selectedTables"
+                selectionMode="multiple"
+                [rowHover]="true"
+                dataKey="tableId"
+            >
                 <ng-template pTemplate="caption">
-                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                    <div
+                        class="flex flex-column md:flex-row md:justify-content-between md:align-items-center"
+                    >
                         <h5 class="m-0">List Table</h5>
                         <span class="block mt-2 md:mt-0 p-input-icon-left">
                             <i class="pi pi-search"></i>
-                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."
-                                class="w-full sm:w-auto" />
+                            <input
+                                pInputText
+                                type="text"
+                                (input)="onGlobalFilter(dt, $event)"
+                                placeholder="Search..."
+                                class="w-full sm:w-auto"
+                            />
                         </span>
                     </div>
                 </ng-template>
                 <ng-template pTemplate="header">
                     <tr>
-                        <th style="width: 3rem">
-                            <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
-                        </th>
+                        <th style="width: 3rem"></th>
                         <th>ID</th>
                         <th>Table</th>
                         <th>Capacity</th>
-                        <th>Status
-                            <p-columnFilter field="status" matchMode="equals" display="menu" [showMatchModes]="false"
-                                [showOperator]="false" [showAddButton]="false">
-                                <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                                    <p-dropdown [ngModel]="value" [options]="statuses" (onChange)="filter($event.value)"
-                                        placeholder="Any" [style]="{'min-width': '12rem'}">
-                                        <ng-template let-option pTemplate="item">
-                                            <p-tag [value]="option.value"
-                                                [severity]="getSeverity(option.value)"></p-tag>
+                        <th>
+                            Status
+                            <p-columnFilter
+                                field="status"
+                                matchMode="equals"
+                                display="menu"
+                                [showMatchModes]="false"
+                                [showOperator]="false"
+                                [showAddButton]="false"
+                            >
+                                <ng-template
+                                    pTemplate="filter"
+                                    let-value
+                                    let-filter="filterCallback"
+                                >
+                                    <p-dropdown
+                                        [ngModel]="value"
+                                        [options]="statuses"
+                                        (onChange)="filter($event.value)"
+                                        placeholder="Any"
+                                        [style]="{ 'min-width': '12rem' }"
+                                    >
+                                        <ng-template
+                                            let-option
+                                            pTemplate="item"
+                                        >
+                                            <p-tag
+                                                [value]="option.value"
+                                                [severity]="
+                                                    getSeverity(option.value)
+                                                "
+                                            ></p-tag>
                                         </ng-template>
                                     </p-dropdown>
                                 </ng-template>
@@ -61,13 +125,30 @@
                 <ng-template pTemplate="body" let-table>
                     <tr>
                         <td>
-                            <p-tableCheckbox [value]="table"></p-tableCheckbox>
+                            <p-tableCheckbox
+                                [value]="table"
+                                [disabled]="table.status !== 'AVAILABLE'"
+                            ></p-tableCheckbox>
                         </td>
                         <td>{{ table.tableId }}</td>
-                        <td>{{ table.name }}</td>
+                        <td>{{ table.tableNumber }}</td>
                         <td>{{ table.capacity }}</td>
+
                         <td>
-                            <p-tag [value]="table.status" [severity]="getSeverity(table.status)"></p-tag>
+                            <p-dropdown
+                                [options]="tableStatus"
+                                [(ngModel)]="table.status"
+                                [disabled]="table.status === 'OCCUPIED'"
+                                appendTo="body"
+                                (onChange)="updateTableStatus(table)"
+                            >
+                                <ng-template pTemplate="selectedItem">
+                                    <p-tag
+                                        [value]="table.status"
+                                        [severity]="getSeverity(table.status)"
+                                    ></p-tag>
+                                </ng-template>
+                            </p-dropdown>
                         </td>
 
                         <!-- <td>
@@ -94,40 +175,60 @@
                     </tr>
                 </ng-template>
             </p-table>
-            <p-table *ngIf="showServing" #dt [value]="tables" responsiveLayout="scroll" [rows]="10"
-                [globalFilterFields]="['name', 'status', 'capacity']" [paginator]="true"
-                [rowsPerPageOptions]="[10, 20, 30]" [showCurrentPageReport]="true" [(selection)]="selectedProducts"
-                selectionMode="multiple" [rowHover]="true" dataKey="tableId">
+            <p-table
+                *ngIf="showServing"
+                #dt
+                [value]="listServing"
+                responsiveLayout="scroll"
+                [rows]="10"
+                [globalFilterFields]="[
+                    'serving.servingId',
+                    'serving.table',
+                    'capacity'
+                ]"
+                [paginator]="true"
+                [(selection)]="selectedServing"
+                selectionMode="multiple"
+                [rowHover]="true"
+                dataKey="serving.servingId "
+            >
                 <ng-template pTemplate="caption">
-                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                    <div
+                        class="flex flex-column md:flex-row md:justify-content-between md:align-items-center"
+                    >
                         <h5 class="m-0">List Serving</h5>
                         <span class="block mt-2 md:mt-0 p-input-icon-left">
                             <i class="pi pi-search"></i>
-                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."
-                                class="w-full sm:w-auto" />
+                            <input
+                                pInputText
+                                type="text"
+                                (input)="onGlobalFilter(dt, $event)"
+                                placeholder="Search..."
+                                class="w-full sm:w-auto"
+                            />
                         </span>
                     </div>
                 </ng-template>
                 <ng-template pTemplate="header">
                     <tr>
-                        <th style="width: 3rem">
-                            <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
-                        </th>
                         <th>ID</th>
+                        <th>Time in</th>
                         <th>Table</th>
-                        <th>Capacity</th>
-                        <th>Status</th>
                     </tr>
                 </ng-template>
-                <ng-template pTemplate="body" let-table>
-                    <tr>
+                <ng-template pTemplate="body" let-ser>
+                    <tr (click)="onServingSelect(ser)" style="cursor: pointer">
+                        <td>{{ ser.serving.servingId }}</td>
                         <td>
-                            <p-tableCheckbox [value]="table"></p-tableCheckbox>
+                            {{ ser.serving.timeIn | date : "H:mm" }}
                         </td>
-                        <td>{{ table.tableId }}</td>
-                        <td>{{ table.name }}</td>
-                        <td>{{ table.capacity }}</td>
-                        <td>{{ table.status }}</td>
+                        <td>{{ ser.serving?.tables?.join(", ") }}</td>
+                        <!-- <td>
+                            <p-tag
+                                [value]="table.serving.status"
+                                [severity]="getSeverity(table.status)"
+                            ></p-tag>
+                        </td> -->
 
                         <!-- <td>
                             <div class="flex">
@@ -155,126 +256,277 @@
             </p-table>
         </div>
     </div>
-    <div *ngIf="showServing" class="col-6">
+    <div *ngIf="showServing && selectedServing" class="col-6">
         <div class="card px-6 py-6">
             <div class="title">
-                <h5>Serving No.1</h5>
+                <h5>Serving No.{{ selectedServing.serving.servingId }}</h5>
             </div>
             <div class="dishes">
-                <p-dataView #dv [value]="sampleFoodData" [rows]="3" filterBy="name, price, category" [paginator]="true">
+                <p-dataView
+                    #dv
+                    [value]="listFood"
+                    [rows]="3"
+                    filterBy="name, price, category"
+                    [paginator]="true"
+                >
                     <ng-template pTemplate="header">
                         <span class="w-100 p-input-icon-left">
                             <i class="pi pi-search"></i>
-                            <input type="search" pInputText placeholder="Search by Name" (input)="onFilter(dv, $event)">
+                            <input
+                                type="search"
+                                pInputText
+                                placeholder="Search by Name"
+                                (input)="onFilter(dv, $event)"
+                            />
                         </span>
                     </ng-template>
                     <ng-template let-product pTemplate="listItem">
-                        <div class="p-2" style="width: 140px;">
-                            <div class="flex flex-column  p-1 gap-2">
-                                <img width="100px" height="100px" class="rounded-circle"
-                                    src="https://i.ibb.co/j30d2NF/image-2023-11-24-232600883.png"
-                                    [alt]="product.name" />
-                                <div class="flex flex-column align-items-stretch flex-1 gap-4">
-                                    <div class="flex flex-column align-items-center sm:align-items-start ">
+                        <div class="p-2" style="width: 140px">
+                            <div class="flex flex-column p-1 gap-2">
+                                <img
+                                    width="100px"
+                                    height="100px"
+                                    class="rounded-circle"
+                                    [src]="product.image"
+                                    [alt]="product.name"
+                                />
+                                <div
+                                    class="flex flex-column align-items-stretch flex-1 gap-4"
+                                >
+                                    <div
+                                        class="flex flex-column align-items-center sm:align-items-start"
+                                    >
                                         <div class="text-md font-semibold">
                                             {{ product.name }}
                                         </div>
-                                        <span class="flex align-items-center ">
-                                            <span class=" text-sm">{{
-                                                product.category
-                                                }}</span>
+                                        <span class="flex align-items-center">
+                                            <span class="text-sm">{{
+                                                getCategoryName(
+                                                    product.categoryId
+                                                )
+                                            }}</span>
                                         </span>
                                     </div>
-                                    <div class="flex sm:flex-row justify-content-between">
+                                    <div
+                                        class="flex sm:flex-row justify-content-between"
+                                    >
                                         <span class="text-md font-semibold">{{
-                                            "$" + product.price
-                                            }}</span>
-                                        <button pButton pRipple type="button" icon="pi pi-plus"
+                                            product.price | currency : "VND"
+                                        }}</span>
+                                        <button
+                                            pButton
+                                            pRipple
+                                            type="button"
+                                            icon="pi pi-plus"
                                             class="p-button-rounded p-button-secondary p-button-outlined"
-                                            [style.width.px]="23" [style.height.px]="24" pTooltip="Add Dish"
-                                            (click)="onAddDish(product)"></button>
+                                            [style.width.px]="23"
+                                            [style.height.px]="24"
+                                            pTooltip="Add Dish"
+                                            (click)="op.toggle($event)"
+                                        ></button>
                                     </div>
-
-
                                 </div>
                             </div>
                         </div>
+                        <p-overlayPanel #op>
+                            <div>
+                                <h6>Quantity</h6>
+                                <p-inputNumber
+                                    [(ngModel)]="qty"
+                                    [showButtons]="true"
+                                    buttonLayout="horizontal"
+                                    spinnerMode="horizontal"
+                                    decrementButtonClass="p-button-secondary"
+                                    incrementButtonClass="p-button-secondary"
+                                    incrementButtonIcon="pi pi-plus"
+                                    decrementButtonIcon="pi pi-minus"
+                                ></p-inputNumber>
+
+                                <h5>Note</h5>
+                                <textarea
+                                    rows="5"
+                                    cols="30"
+                                    class="w-100"
+                                    placeholder="Customer note"
+                                    pInputTextarea
+                                    [(ngModel)]="note"
+                                ></textarea>
+
+                                <button
+                                    pButton
+                                    pRipple
+                                    type="button"
+                                    icon="pi pi-plus"
+                                    label="Add"
+                                    class="p-button-secondary p-button-outlined mx-auto"
+                                    pTooltip="Add Dish"
+                                    (click)="orderFood(product, qty, note)"
+                                ></button>
+                            </div>
+                        </p-overlayPanel>
                     </ng-template>
-
                 </p-dataView>
-
             </div>
 
             <div class="table-detail">
-                <p-tabView orientation="left" (onChange)="onChangeTab($event)">
-                    <p-tabPanel header="Header I" class="line-height-3 m-0">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
-                        labore
-                        et dolore magna aliqua.
-                        Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea
-                        commodo
-                        consequat.
-                        Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-                        pariatur.
-                        Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit
-                        anim id
-                        est laborum.
-                    </p-tabPanel>
-                    <p-tabPanel header="Header II" class="line-height-3 m-0">
-                        Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque
-                        laudantium,
-                        totam rem aperiam, eaque
-                        ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.
-                        Nemo
-                        enim ipsam voluptatem quia
-                        voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui
-                        ratione
-                        voluptatem sequi nesciunt.
-                        Consectetur, adipisci velit, sed quia non numquam eius modi.
-                    </p-tabPanel>
-                    <p-tabPanel header="Header III" class="line-height-3 m-0">
-                        At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium
-                        voluptatum
-                        deleniti atque corrupti quos dolores
-                        et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa
-                        qui
-                        officia deserunt mollitia animi, id est laborum et dolorum fuga.
-                        Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta
-                        nobis est
-                        eligendi optio cumque nihil impedit
-                        quo minus.
-                    </p-tabPanel>
-                </p-tabView>
+                <h6>Order</h6>
+                <p-table
+                    #dt
+                    [value]="servingDetail"
+                    responsiveLayout="scroll"
+                    [scrollable]="true"
+                    scrollHeight="300px"
+                    [rows]="10"
+                    [globalFilterFields]="['name', 'status', 'capacity']"
+                    selectionMode="multiple"
+                    [rowHover]="true"
+                    dataKey="serving.servingId"
+                >
+                    <!-- <ng-template pTemplate="caption">
+                        <div
+                            class="flex flex-column md:flex-row md:justify-content-between md:align-items-center"
+                        >
+                            <h5 class="m-0">List Serving</h5>
+                            <span class="block mt-2 md:mt-0 p-input-icon-left">
+                                <i class="pi pi-search"></i>
+                                <input
+                                    pInputText
+                                    type="text"
+                                    (input)="onGlobalFilter(dt, $event)"
+                                    placeholder="Search..."
+                                    class="w-full sm:w-auto"
+                                />
+                            </span>
+                        </div>
+                    </ng-template> -->
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th>Name</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Status</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-ser>
+                        <tr>
+                            <td>{{ ser.foodName }}</td>
+                            <td>
+                                {{ ser.quantity }}
+                            </td>
+                            <td>
+                                {{ ser.price | currency : "VND" }}
+                            </td>
+                            <td>
+                                <p-dropdown
+                                    [options]="orderStatus"
+                                    appendTo="body"
+                                    [(ngModel)]="selectedStatus"
+                                    (onChange)="updateOrderStatus(ser)"
+                                >
+                                    <ng-template pTemplate="selectedItem">
+                                        <p-tag
+                                            [value]="ser.status"
+                                            [severity]="getSeverity(ser.status)"
+                                        ></p-tag>
+                                    </ng-template>
+                                </p-dropdown>
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="summary">
+                        <div
+                            class="d-flex align-items-center justify-content-end"
+                        >
+                            <p
+                                class="text-center pe-4 mb-0"
+                                style="width: fit-content"
+                            >
+                                Total: {{ totalPrice | currency : "VND" }}
+                            </p>
+                            <button
+                                pButton
+                                pRipple
+                                label="Checkout"
+                                (click)="checkOut()"
+                            ></button>
+                        </div>
+                    </ng-template>
+                </p-table>
             </div>
-            <div class="button-group">
-                <button pButton pRipple type="button" icon="pi pi-plus" class="p-button-secondary p-button-outlined"
-                    [style.width.px]="24" [style.height.px]="20"></button>
-            </div>
+            <!-- <div class="button-group">
+                <button
+                    pButton
+                    pRipple
+                    type="button"
+                    icon="pi pi-plus"
+                    class="p-button-secondary p-button-outlined"
+                    [style.width.px]="24"
+                    [style.height.px]="20"
+                ></button>
+            </div> -->
         </div>
     </div>
 </div>
-<p-dialog [(visible)]="deleteProductDialog" header="Confirm" [modal]="true" [style]="{ width: '450px' }">
+<p-dialog
+    [(visible)]="deleteProductDialog"
+    header="Confirm"
+    [modal]="true"
+    [style]="{ width: '450px' }"
+>
     <div class="flex align-items-center justify-content-center">
         <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
-        <span *ngIf="product">Are you sure you want to delete <b>{{ product.name }}</b>?</span>
+        <span *ngIf="product"
+            >Are you sure you want to delete <b>{{ product.name }}</b
+            >?</span
+        >
     </div>
     <ng-template pTemplate="footer">
-        <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No"
-            (click)="deleteProductDialog = false"></button>
-        <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes" (click)="confirmDelete()"></button>
+        <button
+            pButton
+            pRipple
+            icon="pi pi-times"
+            class="p-button-text"
+            label="No"
+            (click)="deleteProductDialog = false"
+        ></button>
+        <button
+            pButton
+            pRipple
+            icon="pi pi-check"
+            class="p-button-text"
+            label="Yes"
+            (click)="confirmDelete()"
+        ></button>
     </ng-template>
 </p-dialog>
 
-<p-dialog [(visible)]="deleteProductsDialog" header="Confirm" [modal]="true" [style]="{ width: '450px' }">
+<p-dialog
+    [(visible)]="deleteProductsDialog"
+    header="Confirm"
+    [modal]="true"
+    [style]="{ width: '450px' }"
+>
     <div class="flex align-items-center justify-content-center">
         <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
         <span>Are you sure you want to delete selected products?</span>
     </div>
     <ng-template pTemplate="footer">
-        <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No"
-            (click)="deleteProductsDialog = false"></button>
-        <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes"
-            (click)="confirmDeleteSelected()"></button>
+        <button
+            pButton
+            pRipple
+            icon="pi pi-times"
+            class="p-button-text"
+            label="No"
+            (click)="deleteProductsDialog = false"
+        ></button>
+        <button
+            pButton
+            pRipple
+            icon="pi pi-check"
+            class="p-button-text"
+            label="Yes"
+            (click)="confirmDeleteSelected()"
+        ></button>
     </ng-template>
 </p-dialog>
 <p-toast key="toast"></p-toast>

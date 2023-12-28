@@ -1,40 +1,98 @@
+<!-- Thanh tìm kiếm tùy chỉnh -->
 <div class="grid">
     <div class="col-12">
         <div class="card px-6 py-6">
-            <p-button label="Add new staff" icon="pi pi-plus" style="margin-bottom: 10px;"
-                      (click)="showDialog()"></p-button>
-            <div class="d-flex justify-between align-items-center">
-                <h1 style="margin-right: auto;">List Staff</h1>
-                <div class="custom-search">
-                    <span class="block mt-0 md:mt-0 p-input-icon-left">
-                        <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."
-                               class="w-full sm:w-auto" />
-                    </span>
-                </div>
-            </div>
-            <p-table [value]="staffData" [paginator]="true" [rows]="10">
-                <caption>List Staff</caption>
+            <p-toolbar styleClass="mb-4">
+                <ng-template pTemplate="left">
+                    <div class="my-2">
+                        <button
+                            pButton
+                            pRipple
+                            label="Add new account"
+                            icon="pi pi-plus"
+                            (click)="viewDetails({})"
+                            class="p-button-success"
+                        ></button>
+                    </div>
+                </ng-template>
+            </p-toolbar>
+
+            <p-table
+                #dt
+                [value]="listAccount"
+                [paginator]="true"
+                [rows]="10"
+                [globalFilterFields]="['name', 'price', 'email', 'phoneNumber']"
+                [rowHover]="true"
+                dataKey="serving.servingId "
+            >
+                <ng-template pTemplate="caption">
+                    <div
+                        class="flex flex-column md:flex-row md:justify-content-between md:align-items-center"
+                    >
+                        <h5 class="m-0">List Staff</h5>
+                        <span class="block mt-2 md:mt-0 p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <input
+                                pInputText
+                                type="text"
+                                (input)="onGlobalFilter(dt, $event)"
+                                placeholder="Search..."
+                                class="w-full sm:w-auto"
+                            />
+                        </span>
+                    </div>
+                </ng-template>
                 <ng-template pTemplate="header">
                     <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Phone Number</th>
+                        <th [width]="'20%'">Name</th>
+                        <th [width]="'20%'">Email</th>
+                        <th>Role</th>
+                        <!-- <th>Date of Birth</th> -->
+                        <th>Phone</th>
+                        <th>Gender</th>
                         <th>Status</th>
-                        <th>Actions</th>
-                        <th>Approved</th>
+                        <th></th>
+
+                        <!-- <th>Approved</th> -->
                     </tr>
                 </ng-template>
                 <ng-template pTemplate="body" let-row>
-                    <tr *ngIf="matchesSearch(row)">
+                    <tr>
                         <td>{{ row.name }}</td>
                         <td>{{ row.email }}</td>
-                        <td>{{ row.phoneNumber }}</td>
-                        <td>{{ row.status }}</td>
                         <td>
-                            <button pButton type="button" icon="pi pi-pencil" (click)="editStaff(row)"></button>
+                            {{ row.role }}
                         </td>
+                        <!-- <td>{{ row.dateOfBirth | date : "dd/MM/yyyy" }}</td> -->
+                        <td>{{ row.phoneNumber }}</td>
+                        <td>{{ row.gender ? "Male" : "Female" }}</td>
                         <td>
-                            <button pButton type="button" icon="pi pi-trash" (click)="deleteStaff(row)"></button>
+                            <p-tag
+                                [value]="row.isBlock ? 'Blocked' : 'Active'"
+                                [severity]="row.isBlock ? 'error' : 'success'"
+                            ></p-tag>
+                        </td>
+                        <td class="text-end">
+                            <button
+                                class="me-4"
+                                pButton
+                                type="button"
+                                icon="pi pi-pencil"
+                                (click)="viewDetails(row)"
+                            ></button>
+                            <button
+                                [disabled]="row.isBlock"
+                                pButton
+                                type="button"
+                                class="p-button-outlined p-button-danger"
+                                [icon]="
+                                    row.isBlock
+                                        ? 'pi pi-lock-open'
+                                        : 'pi pi-lock'
+                                "
+                                (click)="lockAccount(row)"
+                            ></button>
                         </td>
                     </tr>
                 </ng-template>
@@ -43,159 +101,117 @@
     </div>
 </div>
 
-<p-dialog header="Add Staff" [(visible)]="displayDialog" [modal]="true">
-    <div class="form-group">
-        <label for="name">Staff Name:</label>
-        <input pInputText type="text" [(ngModel)]="newStaff.name" id="name" />
-    </div>
-    <div style="display: flex; flex-wrap: wrap;">
-        <div class="form-group" style="flex: 1; margin-right: 20px;">
-            <label for="dateOfBirth">Date of Birth:</label>
-        </div>
-        <div class="form-group" style="flex: 2;">
-            <input pInputText type="text" [(ngModel)]="newStaff.dateOfBirth" id="dateOfBirth" />
-        </div>
-    </div>
-
-    <div style="display: flex; flex-wrap: wrap; margin-top: 10px;">
-        <div class="form-group" style="flex: 1; margin-right: 20px;">
-            <label for="gender">Gender:</label>
-        </div>
-        <div class="form-group" style="flex: 2;">
-            <p-dropdown [options]="genderOptions" [(ngModel)]="editingStaff.gender" id="gender" optionLabel="label" optionValue="value"></p-dropdown>
-        </div>
-    </div>
-
-    <div class="form-group">
-        <label for="email">Email:</label>
-        <input pInputText type="text" [(ngModel)]="newStaff.email" id="email" />
-    </div>
-    <div style="display: flex; flex-wrap: wrap;">
-        <div class="form-group" style="flex: 1; margin-right: 20px;">
-            <label for="phoneNumber">PhoneNumber:</label>
-        </div>
-        <div class="form-group" style="flex: 2;">
-            <input pInputText type="number" [(ngModel)]="newStaff.phoneNumber" id="phoneNumber" />
-        </div>
-    </div>
-
-    <div style="display: flex; flex-wrap: wrap; margin-top: 10px;">
-        <div class="form-group" style="flex: 1; margin-right: 20px;">
-            <label for="role">Role:</label>
-        </div>
-        <div class="form-group" style="flex: 2;">
-            <p-dropdown [options]="roleOptions" [(ngModel)]="editingStaff.role" id="role" optionLabel="label" optionValue="value"></p-dropdown>
-        </div>
-    </div>
-
-    <div class="form-group">
-        <label for="address">Address:</label>
-        <input pInputText type="text" [(ngModel)]="newStaff.address" id="address" />
-    </div>
-    <div class="button-group" style="display: flex; justify-content: space-between;">
-        <button pButton type="button" label="Save" (click)="saveStaff()" style="margin-right:auto;"></button>
-        <button pButton type="button" label="Cancel" (click)="cancelStaff()"></button>
-    </div>
-</p-dialog>
-
-<!-- Similar sidebar for staff details as in the menu -->
-
-<p-sidebar [(visible)]="displaySidebar" [position]="'right'" [blockScroll]="true">
-    <ng-container *ngIf="selectedStaff">
-        <!-- Các thông tin chi tiết của món ăn -->
-        <div>
-            <label>Staff Name:</label>
-            <div>{{ selectedStaff.name }}</div>
-        </div>
-        <div>
-            <label>Date of Birth:</label>
-            <div>{{ selectedStaff.dateOfBirth }}</div>
-        </div>
-        <div>
-            <label>Gender:</label>
-            <div>{{ selectedStaff.gender }}</div>
-        </div>
-        <div>
-            <label>Email:</label>
-            <div>{{ selectedStaff.email }}</div>
-        </div>
-        <div>
-            <label>Phone Number:</label>
-            <div>{{ selectedStaff.phoneNumber }}</div>
-        </div>
-        <div>
-            <label>Role:</label>
-            <div>{{ selectedStaff.role}}</div>
-        </div>
-        <div>
-            <label>Address:</label>
-            <div>{{ selectedStaff.address}}</div>
-        </div>
-
-        <div class="button-group" style="display: flex; gap: 10px;">
-            <!-- Nút Edit -->
-            <p-button label="Edit" icon="pi pi-pencil" style="margin-bottom: 10px;" (click)="editStaff()"></p-button>
-
-
-            <p-button label="Delete" icon="pi pi-trash" style="margin-bottom: 10px;" (click)="deleteStaff()"></p-button>
-        </div>
-    </ng-container>
-
-    <!-- Form fields for editing staff details -->
-
-    <div *ngIf="editingStaff">
-        <div>
-            <label for="name">Staff Name:</label>
-            <input pInputText type="text" [(ngModel)]="editingStaff.name" id="name" />
-        </div>
-        <div style="display: flex; flex-wrap: wrap;">
-            <div style="flex: 1; margin-right: 20px;">
-                <label for="dateOfBirth">Date of Birth:</label>
+<p-sidebar
+    [(visible)]="displaySidebar"
+    [position]="'right'"
+    [blockScroll]="true"
+>
+    <ng-template pTemplate="header">
+        <p-button
+            [label]="account.accountId ? 'Save' : 'Create'"
+            [disabled]="addAccount.invalid"
+            (click)="saveEditedAccount()"
+        ></p-button>
+    </ng-template>
+    <div
+        *ngIf="displaySidebar"
+        class="position-relative h-75"
+        [formGroup]="addAccount"
+    >
+        <div
+            *ngIf="isLoading"
+            class="loading w-100 h-100 position-absolute d-flex d-flex justify-content-center align-items-center flex-column gap-2 bg-body rounded-3 z-3"
+        >
+            <div class="spinner-border" role="status">
+                <span class="sr-only">Loading...</span>
             </div>
-            <div style="flex: 2;">
-                <input pInputText type="text" [(ngModel)]="editingStaff.dateOfBirth" id="dateOfBirth" />
-            </div>
+            <p style="opacity: 0.7">Loading</p>
+        </div>
+        <div class="avatar d-flex justify-content-center mt-4">
+            <span
+                class="m-4 my-2 rounded-1 d-flex justify-content-center align-items-center"
+            >
+                <label class="custom-file-upload">
+                    <input
+                        type="file"
+                        accept="image/png, image/jpeg"
+                        id="avatarInput"
+                        (change)="selectedAvatar($event)"
+                    />
+                    <img
+                        [src]="
+                            account.avatar ||
+                            'https://res.cloudinary.com/dwskvqnkc/image/upload/v1698909675/menu_minder_store/img_default_elml1l.jpg'
+                        "
+                        alt=""
+                        id="imgInput"
+                        class="w-100"
+                    />
+                    <!-- <i class="pi pi-image" style="font-size: 2.5rem"></i> -->
+                </label>
+            </span>
+        </div>
+        <div class="row-type">
+            <label for="name">Name:</label>
+            <input pInputText type="text" formControlName="name" id="name" />
         </div>
 
-        <div style="display: flex; flex-wrap: wrap; margin-top: 10px;">
-            <div style="flex: 1; margin-right: 20px;">
-                <label for="gender">Gender:</label>
-            </div>
-            <div style="flex: 2;">
-                <p-dropdown [options]="genderOptions" [(ngModel)]="editingStaff.gender" id="gender" optionLabel="label" optionValue="value"></p-dropdown>
-            </div>
-        </div>
-
-        <div>
+        <div class="row-type">
             <label for="email">Email:</label>
-            <input pInputText type="text" [(ngModel)]="editingStaff.email" id="email" />
-        </div>
-        <div style="display: flex; flex-wrap: wrap;">
-            <div style="flex: 1; margin-right: 20px;">
-                <label for="phoneNumber">Phone Number:</label>
-            </div>
-            <div style="flex: 2;">
-                <input pInputText type="number" [(ngModel)]="editingStaff.phoneNumber" id="phoneNumber" />
-            </div>
+            <input pInputText type="email" formControlName="email" id="email" />
         </div>
 
-        <div style="display: flex; flex-wrap: wrap; margin-top: 10px;">
-            <div style="flex: 1; margin-right: 20px;">
-                <label for="role">Role:</label>
-            </div>
-            <div style="flex: 2;">
-                <p-dropdown [options]="roleOptions" [(ngModel)]="editingStaff.role" id="role" optionLabel="label" optionValue="value"></p-dropdown>
-            </div>
+        <div class="row-type">
+            <label for="password">Password:</label>
+            <p-password
+                formControlName="password"
+                id="password"
+                [toggleMask]="true"
+            ></p-password>
         </div>
-
-        <div>
-            <label for="address">Address:</label>
-            <input pInputText type="text" [(ngModel)]="editingStaff.address" id="address" />
+        <div class="row-type">
+            <label for="gender">Gender:</label>
+            <p-dropdown
+                [options]="gender"
+                optionLabel="name"
+                optionValue="id"
+                formControlName="gender"
+                id="gender"
+            >
+            </p-dropdown>
         </div>
-        <div class="button-group" style="display: flex; gap: 10px;">
-            <p-button label="Save" (click)="saveEditedStaff()"></p-button>
+        <div class="row-type">
+            <label for="phone">Phone:</label>
+            <input
+                pInputText
+                type="text"
+                formControlName="phoneNumber"
+                id="phone"
+            />
+        </div>
+        <!-- <div class="row-type">
+            <label for="dob">Date of Birth:</label>
+            <p-calendar
+                [showIcon]="true"
+                inputId="icon"
+                id="dob"
+                formControlName="dateOfBirth"
+            ></p-calendar>
+        </div> -->
+        <div class="row-type">
+            <label for="role">Role:</label>
 
-            <p-button label="Cancel" (click)="cancelEdit()"></p-button>
+            <p-multiSelect
+                styleClass="flex-center"
+                [options]="role"
+                optionLabel="permissionName"
+                optionValue="permissionId"
+                formControlName="permissionIds"
+                id="role"
+            >
+            </p-multiSelect>
         </div>
     </div>
 </p-sidebar>
+
+<p-toast key="toast"></p-toast>
