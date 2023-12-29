@@ -58,6 +58,7 @@ export class AppMenuComponent implements OnInit {
                         routerLink: ['/pages/statistic'],
                         // hide: true,
                     },
+
                     {
                         label: 'Log out',
                         icon: 'pi pi-fw pi-sign-in',
@@ -72,11 +73,19 @@ export class AppMenuComponent implements OnInit {
         this.model[0].items.forEach((item) => {
             if (this.permission?.includes(item.label)) menu.push(item);
         });
-        menu.push({
-            label: 'Log out',
-            icon: 'pi pi-fw pi-sign-in',
-            routerLink: ['/auth/login'],
-        });
+        menu.push(
+            {
+                label: 'Change password',
+                icon: 'pi pi-fw pi-key',
+                routerLink: ['/pages/change-password'],
+                // hide: true,
+            },
+            {
+                label: 'Log out',
+                icon: 'pi pi-fw pi-sign-in',
+                routerLink: ['/auth/login'],
+            }
+        );
         this.model[0].items = menu;
     }
 }

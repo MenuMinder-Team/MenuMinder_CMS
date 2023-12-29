@@ -13,7 +13,7 @@ import { TableService } from 'src/app/services/table.service';
 })
 export class TableComponent {
     listTable: any[] = [];
-    status = ['PENDING', 'AVAILABLE', 'PERSERVING'];
+    status = ['AVAILABLE', 'OCCUPIED', 'PREPARING'];
     role = ['Table', 'Admin'];
 
     displaySidebar: boolean = false;
@@ -38,7 +38,7 @@ export class TableComponent {
             tableId: this.builder.control(''),
             tableNumber: this.builder.control('', Validators.required),
             capacity: this.builder.control('', Validators.required),
-            status: this.builder.control('', Validators.required),
+            status: this.builder.control('AVAILABLE'),
         });
     }
 
@@ -62,6 +62,9 @@ export class TableComponent {
         if (row) {
             this.table = _.cloneDeep(row);
             this.addTable.patchValue(this.table);
+        } else {
+            this.addTable.reset();
+            this.table = [];
         }
         this.displaySidebar = true;
     }
@@ -83,7 +86,7 @@ export class TableComponent {
 
     saveEditedTable() {
         this.isLoading = true;
-        if (this.table.tableId) {
+        if (this.table?.tableId) {
             this.tableService.updateInfo(this.addTable.value).subscribe({
                 next: (res) => {
                     this.isLoading = false;

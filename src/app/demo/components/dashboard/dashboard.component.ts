@@ -1,15 +1,18 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { MenuItem } from 'primeng/api';
 import { Product } from '../../api/product';
-import { Subscription } from 'rxjs';
+import { Subscription, forkJoin } from 'rxjs';
 import { LayoutService } from 'src/app/layout/service/app.layout.service';
 import { ProductService } from '../../service/product.service';
+import { Router } from '@angular/router';
+import { StatisticService } from 'src/app/services/statistic.service';
+import { StorageService } from 'src/app/services/storage.service';
+import * as moment from 'moment';
 
 @Component({
     templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent implements OnInit, OnDestroy {
-
     items!: MenuItem[];
 
     products!: Product[];
@@ -19,82 +22,63 @@ export class DashboardComponent implements OnInit, OnDestroy {
     chartOptions: any;
 
     subscription!: Subscription;
+    lineData;
+    generalData;
+    constructor(
+        private productService: ProductService,
+        public layoutService: LayoutService,
+        private storageService: StorageService,
+        private router: Router,
+        private statisticService: StatisticService
+    ) {}
 
-    constructor(private productService: ProductService, public layoutService: LayoutService) {
-        this.subscription = this.layoutService.configUpdate$.subscribe(() => {
-            this.initChart();
+    ngOnInit(): void {
+        const params = {
+            fromDate: moment()
+                .clone()
+                .startOf('month')
+                .set({ hour: 7, minute: 0, second: 0, millisecond: 0 })
+                .format('yyyy-MM-DD'),
+            toDate: moment().clone().endOf('month').format('yyyy-MM-DD'),
+            reportType: 'day',
+        };
+
+        forkJoin([
+            this.statisticService.getRevenue(params),
+            this.statisticService.getGeneral(params),
+        ]).subscribe({
+            next: (res) => {
+                this.initChart(res[0]);
+                this.generalData = res[1];
+            },
         });
     }
-
-    ngOnInit() {
-        this.initChart();
-        this.productService.getProductsSmall().then(data => this.products = data);
-
-        this.items = [
-            { label: 'Add New', icon: 'pi pi-fw pi-plus' },
-            { label: 'Remove', icon: 'pi pi-fw pi-minus' }
-        ];
-    }
-
-    initChart() {
+    initChart(data) {
         const documentStyle = getComputedStyle(document.documentElement);
         const textColor = documentStyle.getPropertyValue('--text-color');
-        const textColorSecondary = documentStyle.getPropertyValue('--text-color-secondary');
-        const surfaceBorder = documentStyle.getPropertyValue('--surface-border');
-
-        this.chartData = {
-            labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+        const textColorSecondary = documentStyle.getPropertyValue(
+            '--text-color-secondary'
+        );
+        const reportTime = data.map((i) =>
+            moment(i.reportTime).format('DD/MM')
+        );
+        const value = data.map((item) => item.totalRevenue);
+        this.lineData = {
+            labels: reportTime,
             datasets: [
                 {
-                    label: 'First Dataset',
-                    data: [65, 59, 80, 81, 56, 55, 40],
+                    label: 'Total Sell',
+                    data: value,
                     fill: false,
-                    backgroundColor: documentStyle.getPropertyValue('--bluegray-700'),
-                    borderColor: documentStyle.getPropertyValue('--bluegray-700'),
-                    tension: .4
+                    backgroundColor:
+                        documentStyle.getPropertyValue('--primary-500'),
+                    borderColor:
+                        documentStyle.getPropertyValue('--primary-500'),
+                    tension: 0.4,
                 },
-                {
-                    label: 'Second Dataset',
-                    data: [28, 48, 40, 19, 86, 27, 90],
-                    fill: false,
-                    backgroundColor: documentStyle.getPropertyValue('--green-600'),
-                    borderColor: documentStyle.getPropertyValue('--green-600'),
-                    tension: .4
-                }
-            ]
-        };
-
-        this.chartOptions = {
-            plugins: {
-                legend: {
-                    labels: {
-                        color: textColor
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    ticks: {
-                        color: textColorSecondary
-                    },
-                    grid: {
-                        color: surfaceBorder,
-                        drawBorder: false
-                    }
-                },
-                y: {
-                    ticks: {
-                        color: textColorSecondary
-                    },
-                    grid: {
-                        color: surfaceBorder,
-                        drawBorder: false
-                    }
-                }
-            }
+            ],
         };
     }
-
     ngOnDestroy() {
         if (this.subscription) {
             this.subscription.unsubscribe();
